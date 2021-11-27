@@ -8,7 +8,6 @@ public class PriceThrottler implements PriceProcessor {
     private final Map<String, Map.Entry<Double, Integer>> pairToPriceVersion = new ConcurrentHashMap<>();
     private final BlockingQueue<String> pairsPriceToHandle = new LinkedBlockingQueue<String>();
     private final ExecutorService pool = Executors.newCachedThreadPool();
-    private final ExecutorService listenersNotifiersStarter = Executors.newSingleThreadExecutor();
     {
         startInputHandlerAsync();
     }
