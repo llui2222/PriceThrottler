@@ -8,6 +8,7 @@ public class PriceThrottler implements PriceProcessor {
     private final Map<String, Map.Entry<Double, Integer>> pairToPriceVersion = new ConcurrentHashMap<>();
     private final BlockingQueue<String> pairsPriceToHandle = new LinkedBlockingQueue<String>();
     private final ExecutorService pool = Executors.newCachedThreadPool();
+
     {
         startInputHandlerAsync();
     }
@@ -29,7 +30,7 @@ public class PriceThrottler implements PriceProcessor {
         Executors.newSingleThreadExecutor().execute(
                 () -> {
                     Integer originPriceVersion = pairToPriceVersion.get(pair).getValue();
-                    notifySubscribers(pair,originPriceVersion);
+                    notifySubscribers(pair, originPriceVersion);
                 }
         );
     }
@@ -37,8 +38,8 @@ public class PriceThrottler implements PriceProcessor {
     private void notifySubscribers(String pair, Integer originPriceVersion) {
         listeners.parallelStream().forEach(
                 priceProcessor -> {
-                    if(Objects.equals(originPriceVersion, pairToPriceVersion.get(pair).getValue())){
-                        priceProcessor.onPrice(pair,pairToPriceVersion.get(pair).getKey());
+                    if (Objects.equals(originPriceVersion, pairToPriceVersion.get(pair).getValue())) {
+                        priceProcessor.onPrice(pair, pairToPriceVersion.get(pair).getKey());
                     }
                 }
         );
@@ -48,10 +49,10 @@ public class PriceThrottler implements PriceProcessor {
     public void onPrice(String ccyPair, double rate) {
         System.out.println("new price for: " + ccyPair + " : " + rate);
         pairToPriceVersion.compute(ccyPair, (p, priceToVersion) -> {
-            if(priceToVersion==null){
-                return new AbstractMap.SimpleEntry<>(rate,1);
+            if (priceToVersion == null) {
+                return new AbstractMap.SimpleEntry<>(rate, 1);
             }
-            return new AbstractMap.SimpleEntry<>(rate,priceToVersion.getValue() + 1);
+            return new AbstractMap.SimpleEntry<>(rate, priceToVersion.getValue() + 1);
         });
         pairsPriceToHandle.add(ccyPair);
     }

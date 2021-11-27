@@ -2,21 +2,19 @@ package priceprocessor;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 class PriceThrottlerTest {
 
-    private static final String[] PAIRS = {"EURUSD","EURRUB","USDRUB"};
+    private static final String[] PAIRS = {"EURUSD", "EURRUB", "USDRUB"};
 
     @Test
     public void process_3_processors() throws InterruptedException {
-        int quantity= 3;
+        int quantity = 3;
         PriceThrottler priceThrottler = new PriceThrottler();
-        Map<PriceProcessor,Boolean> processors = createProcessors(quantity);
+        Map<PriceProcessor, Boolean> processors = createProcessors(quantity);
         Thread priceGenerator = createPriceGenerator(priceThrottler);
         priceGenerator.start();
         addRemoveProcessorsSync(priceThrottler, processors);
@@ -25,15 +23,15 @@ class PriceThrottlerTest {
     }
 
     private void addRemoveProcessorsSync(PriceThrottler priceThrottler,
-                                         Map<PriceProcessor,Boolean> processors) throws InterruptedException {
-        for (int i = 0; i <30; i++) {
-            Map.Entry<PriceProcessor,Boolean> randomEntry =
+                                         Map<PriceProcessor, Boolean> processors) throws InterruptedException {
+        for (int i = 0; i < 30; i++) {
+            Map.Entry<PriceProcessor, Boolean> randomEntry =
                     (Map.Entry<PriceProcessor, Boolean>) processors.entrySet()
                             .toArray()[ThreadLocalRandom.current().nextInt(processors.size())];
-            if(randomEntry.getValue()){ // added
+            if (randomEntry.getValue()) { // added
                 priceThrottler.unsubscribe(randomEntry.getKey());
                 randomEntry.setValue(false);
-            }else{
+            } else {
                 priceThrottler.subscribe(randomEntry.getKey());
                 randomEntry.setValue(true);
             }
@@ -59,7 +57,7 @@ class PriceThrottlerTest {
     private Map<PriceProcessor, Boolean> createProcessors(int quantity) {
         Map<PriceProcessor, Boolean> processors = new HashMap<>();
         for (int i = 0; i < quantity; i++) {
-            processors.put(createProcessor(i),false);
+            processors.put(createProcessor(i), false);
         }
         return processors;
     }
